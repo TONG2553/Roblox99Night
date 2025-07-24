@@ -1,0 +1,77 @@
+local function refreshUI()
+
+    -- สร้าง Section ใหม่แทนของเก่า
+
+    local NewMainSection = MainTab:NewSection("Auto Functions")
+
+    NewMainSection:NewToggle(Texts[Language].autoChop, Texts[Language].autoChopDesc, function(state)
+
+        AutoChop = state
+
+        if AutoChop then doAutoChop() end
+
+    end)
+
+    NewMainSection:NewToggle(Texts[Language].killAura, Texts[Language].killAuraDesc, function(state)
+
+        KillAura = state
+
+        if KillAura then doKillAura() end
+
+    end)
+
+    NewMainSection:NewToggle(Texts[Language].autoCampfire, Texts[Language].autoCampfireDesc, function(state)
+
+        AutoCampfire = state
+
+        if AutoCampfire then doAutoCampfire() end
+
+    end)
+
+    NewMainSection:NewToggle(Texts[Language].autoCollect, Texts[Language].autoCollectDesc, function(state)
+
+        AutoCollect = state
+
+        if AutoCollect then doAutoCollect() end
+
+    end)
+
+    NewMainSection:NewKeybind(Texts[Language].toggleUI, Texts[Language].toggleUI, Enum.KeyCode.F, function()
+
+        Library:ToggleUI()
+
+    end)
+
+    NewMainSection:NewButton(Texts[Language].langToggle, "Switch language", function()
+
+        Language = (Language == "EN") and "TH" or "EN"
+
+        Window:SetTitle(Texts[Language].title)
+
+        -- สร้าง Teleport Section ใหม่
+
+        local NewTeleportTab = Window:NewTab(Texts[Language].teleportTab)
+
+        local NewTeleportSection = NewTeleportTab:NewSection(Texts[Language].teleportSection)
+
+        for name, pos in pairs(locations) do
+
+            NewTeleportSection:NewButton(Texts[Language].teleportTo .. name, Texts[Language].teleportTo .. name, function()
+
+                local hrp = Character:FindFirstChild("HumanoidRootPart")
+
+                if hrp then
+
+                    hrp.CFrame = CFrame.new(pos)
+
+                end
+
+            end)
+
+        end
+
+        refreshUI() -- รีเฟรชปุ่มใหม่
+
+    end)
+
+end
