@@ -1,77 +1,86 @@
-local function refreshUI()
+-- ✅ Roblox99Night AutoFarm - Full Script by Run4RobloxScripts -- รองรับ OrionLib UI Library
 
-    -- สร้าง Section ใหม่แทนของเก่า
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/shlexware/Orion/main/source"))() local Player = game.Players.LocalPlayer local Character = Player.Character or Player.CharacterAdded:Wait()
 
-    local NewMainSection = MainTab:NewSection("Auto Functions")
+local Window = OrionLib:MakeWindow({ Name = "Run4RobloxScripts | 99Night AutoFarm", HidePremium = false, SaveConfig = true, ConfigFolder = "Run4RobloxConfigs" })
 
-    NewMainSection:NewToggle(Texts[Language].autoChop, Texts[Language].autoChopDesc, function(state)
+local AutoChop = false local KillAura = false local AutoCampfire = false local AutoCollect = false local Language = "EN"
 
+local Texts = { EN = { title = "Run4RobloxScripts - AutoFarm", autoChop = "Auto Chop Trees", autoChopDesc = "Automatically chop nearby trees", killAura = "Kill Aura", killAuraDesc = "Attack enemies automatically nearby", autoCampfire = "Auto Campfire", autoCampfireDesc = "Auto light campfire nearby", autoCollect = "Auto Collect", autoCollectDesc = "Collect nearby items", teleportTab = "Teleports", teleportSection = "Available Locations", teleportTo = "Teleport to ", toggleUI = "Toggle UI", langToggle = "Switch Language", }, TH = { title = "Run4RobloxScripts - ฟาร์มอัตโนมัติ", autoChop = "ตัดต้นไม้อัตโนมัติ", autoChopDesc = "ตัดต้นไม้รอบตัวโดยอัตโนมัติ", killAura = "ฆ่าอัตโนมัติ", killAuraDesc = "ตีศัตรูที่อยู่ใกล้โดยอัตโนมัติ", autoCampfire = "จุดกองไฟอัตโนมัติ", autoCampfireDesc = "จุดกองไฟที่อยู่ใกล้โดยอัตโนมัติ", autoCollect = "เก็บของอัตโนมัติ", autoCollectDesc = "เก็บไอเทมที่อยู่รอบตัว", teleportTab = "วาร์ป", teleportSection = "ตำแหน่งที่ไปได้", teleportTo = "วาร์ปไปยัง ", toggleUI = "ซ่อน/แสดง UI", langToggle = "เปลี่ยนภาษา", } }
+
+local locations = { ["Camp"] = Vector3.new(0, 10, 0), ["Forest"] = Vector3.new(100, 10, 100), -- เพิ่มตำแหน่งอื่น ๆ ได้ที่นี่ }
+
+local function doAutoChop() while AutoChop do -- ใส่โค้ดตัดไม้จริง wait(1) end end
+
+local function doKillAura() while KillAura do -- ใส่โค้ดตีมอนสเตอร์ wait(0.5) end end
+
+local function doAutoCampfire() while AutoCampfire do -- จุดกองไฟอัตโนมัติ wait(2) end end
+
+local function doAutoCollect() while AutoCollect do -- เก็บไอเทมใกล้ตัว wait(2) end end
+
+local function refreshUI() local MainTab = Window:MakeTab({Name = "AutoFarm", Icon = "rbxassetid://4483345998", PremiumOnly = false}) local MainSection = MainTab:AddSection({Name = "Auto Functions"})
+
+MainTab:AddToggle({
+    Name = Texts[Language].autoChop,
+    Default = false,
+    Callback = function(state)
         AutoChop = state
+        if state then coroutine.wrap(doAutoChop)() end
+    end
+})
 
-        if AutoChop then doAutoChop() end
-
-    end)
-
-    NewMainSection:NewToggle(Texts[Language].killAura, Texts[Language].killAuraDesc, function(state)
-
+MainTab:AddToggle({
+    Name = Texts[Language].killAura,
+    Default = false,
+    Callback = function(state)
         KillAura = state
+        if state then coroutine.wrap(doKillAura)() end
+    end
+})
 
-        if KillAura then doKillAura() end
-
-    end)
-
-    NewMainSection:NewToggle(Texts[Language].autoCampfire, Texts[Language].autoCampfireDesc, function(state)
-
+MainTab:AddToggle({
+    Name = Texts[Language].autoCampfire,
+    Default = false,
+    Callback = function(state)
         AutoCampfire = state
+        if state then coroutine.wrap(doAutoCampfire)() end
+    end
+})
 
-        if AutoCampfire then doAutoCampfire() end
-
-    end)
-
-    NewMainSection:NewToggle(Texts[Language].autoCollect, Texts[Language].autoCollectDesc, function(state)
-
+MainTab:AddToggle({
+    Name = Texts[Language].autoCollect,
+    Default = false,
+    Callback = function(state)
         AutoCollect = state
+        if state then coroutine.wrap(doAutoCollect)() end
+    end
+})
 
-        if AutoCollect then doAutoCollect() end
+MainTab:AddBind({
+    Name = Texts[Language].toggleUI,
+    Default = Enum.KeyCode.F,
+    Hold = false,
+    Callback = function()
+        OrionLib:Toggle()
+    end
+})
 
-    end)
-
-    NewMainSection:NewKeybind(Texts[Language].toggleUI, Texts[Language].toggleUI, Enum.KeyCode.F, function()
-
-        Library:ToggleUI()
-
-    end)
-
-    NewMainSection:NewButton(Texts[Language].langToggle, "Switch language", function()
-
+MainTab:AddButton({
+    Name = Texts[Language].langToggle,
+    Callback = function()
         Language = (Language == "EN") and "TH" or "EN"
+        OrionLib:MakeNotification({Name="Language Switched",Content=Texts[Language].title,Time=2})
+        refreshUI()
+    end
+})
 
-        Window:SetTitle(Texts[Language].title)
+local TeleportTab = Window:MakeTab({Name = Texts[Language].teleportTab, Icon = "rbxassetid://4483345998", PremiumOnly = false})
+local TeleportSection = TeleportTab:AddSection({Name = Texts[Language].teleportSection})
 
-        -- สร้าง Teleport Section ใหม่
+for name, pos in pairs(locations) do
+    TeleportTab:AddButton({
+        Name = Texts[Language].teleportTo .. name,
+        Callback = function()
+            local hrp = Character:FindFirstChild("HumanoidRootPart")
+            if hrp then hrp.CFrame = CFrame.new(pos) end
 
-        local NewTeleportTab = Window:NewTab(Texts[Language].teleportTab)
-
-        local NewTeleportSection = NewTeleportTab:NewSection(Texts[Language].teleportSection)
-
-        for name, pos in pairs(locations) do
-
-            NewTeleportSection:NewButton(Texts[Language].teleportTo .. name, Texts[Language].teleportTo .. name, function()
-
-                local hrp = Character:FindFirstChild("HumanoidRootPart")
-
-                if hrp then
-
-                    hrp.CFrame = CFrame.new(pos)
-
-                end
-
-            end)
-
-        end
-
-        refreshUI() -- รีเฟรชปุ่มใหม่
-
-    end)
-
-end
